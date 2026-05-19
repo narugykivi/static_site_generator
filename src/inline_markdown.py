@@ -13,6 +13,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
 
 def helper_func(node, delimiter, text_type):
     new_nodes = []
+    #print(delimiter, type(node.text), node.text)
     split = node.text.split(delimiter)
     if (len(split) - 1) % 2 != 0:
         raise Exception(f"Invalid Markdown syntax: {len(split) - 1} delimeter found")
@@ -50,10 +51,6 @@ def split_nodes_image(old_nodes):
             if original_text != "":
                 new_nodes.append(TextNode(original_text, TextType.TEXT))
     return new_nodes
-
-
-
-
     
 def split_nodes_link(old_nodes):
     new_nodes = []
@@ -74,4 +71,13 @@ def split_nodes_link(old_nodes):
                     original_text = ""
             if original_text != "":
                 new_nodes.append(TextNode(original_text, TextType.TEXT))
+    return new_nodes
+
+def text_to_textnodes(text):
+    new_nodes = [TextNode(text, TextType.TEXT)]
+    new_nodes = split_nodes_delimiter(new_nodes, "**", TextType.BOLD)
+    new_nodes = split_nodes_delimiter(new_nodes, "_", TextType.ITALIC)
+    new_nodes = split_nodes_delimiter(new_nodes, "`", TextType.CODE)
+    new_nodes = split_nodes_image(new_nodes)
+    new_nodes = split_nodes_link(new_nodes)
     return new_nodes

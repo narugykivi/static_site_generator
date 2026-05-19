@@ -5,7 +5,8 @@ from inline_markdown import(
     extract_markdown_images,
     extract_markdown_links,
     split_nodes_image,
-    split_nodes_link
+    split_nodes_link,
+    text_to_textnodes
 )
 from textnode import TextNode, TextType
 
@@ -131,7 +132,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             split_nodes_delimiter([node], "**", TextType.BOLD)
         self.assertTrue(expected in str(cm.exception))
 
-class test_extract_markdown_with_regex(unittest.TestCase):
+class TestExtractMarkdownWithRegex(unittest.TestCase):
     def test_extract_markdown_images(self):
         matches = extract_markdown_images(
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
@@ -219,6 +220,42 @@ class test_extract_markdown_with_regex(unittest.TestCase):
             new_nodes,
         )
 
+class TestTextToTextNodes(unittest.TestCase):
+    def test_markdown_to_text_nodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        new_nodes = text_to_textnodes(text)
+        self.assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev"),
+            ],
+            new_nodes,
+        )
+
+    def test_markdown_to_text_nodes_syntax_error(self):
+        text = "This is **text* with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = "Invalid Markdown syntax:"
+        with self.assertRaises(Exception) as cm:
+            text_to_textnodes(text)
+        self.assertTrue(expected in str(cm.exception))
+
+    def test_markdown_to_text_nodes_without_markdown(self):
+        text = "This is text without an italic word and a code block and an obi wan image and a link"
+        new_nodes = text_to_textnodes(text)
+        self.assertListEqual(
+            [
+                TextNode("This is text without an italic word and a code block and an obi wan image and a link", TextType.TEXT),
+            ],
+            new_nodes,
+        )
 
 if __name__ == "__main__":
     unittest.main()
