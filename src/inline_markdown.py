@@ -1,6 +1,22 @@
 import re
+from enum import Enum
 
 from textnode import TextNode, TextType
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+
+__heading_regex = r"(^#{1,6} )"
+__ord_list_regex = r"(^\d\. )"
+__unord_list_regex = r"(^- )"
+__quote_regex = r"(^>)"
+__code_regex = r"(^```\n[\s\S]*?```)"
+__regex_flags = re.RegexFlag.MULTILINE
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
@@ -93,3 +109,36 @@ def markdown_to_blocks(markdown):
         for i in sorted(empty).reverse():
             blocks.pop(i)
     return blocks
+
+def block_to_block_type(block):
+    leading_chars, rest_of_the_text = block.split(" ", 1)
+    lines = block.split("/n")
+    if leading_chars in "######" and rest_of_the_text != "":
+        return BlockType.HEADING
+    #print("Not heading:", leading_chars)
+    if [] != re.findall(__code_regex, block, __regex_flags):
+        return BlockType.CODE
+    #print("Not code:", leading_chars, rest_of_the_text[-3:])
+    is_quote = True
+    is_unord = True
+    is_ord = True
+    for line in lines:
+        if line[0] != ">":
+            #print("Not quote:", line)
+            is_quote = False
+        if line[0:2] != "- ":
+            #print("Not unordered list:", line, "First two char:", line[:2])
+            is_unord = False
+        if [] == re.findall(__ord_list_regex, line):
+            #print("Not ordered list:", line)
+            is_ord = False
+    #print("Is quote?", is_quote)
+    #print("Is unordered list?", is_unord)
+    #print("Is ordered list?", is_ord)
+    if is_quote:
+        return BlockType.QUOTE
+    if is_unord:
+        return BlockType.UNORDERED_LIST
+    if is_ord:
+        return BlockType.ORDERED_LIST
+    return BlockType.PARAGRAPH
