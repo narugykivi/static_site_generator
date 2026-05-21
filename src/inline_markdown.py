@@ -2,6 +2,7 @@ import re
 from enum import Enum
 
 from textnode import TextNode, TextType
+from htmlnode import ParentNode, LeafNode
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -142,3 +143,47 @@ def block_to_block_type(block):
     if is_ord:
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
+
+    
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    html_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        node = block_to_html_node(block, block_type)
+        html_nodes.append(node)
+    result = ParentNode("div", html_nodes)
+    print(result.to_html())
+    return result
+
+def block_to_html_node(block, block_type):
+    match(block_type):
+        case BlockType.QUOTE:
+            pass
+        case BlockType.UNORDERED_LIST:
+            lines = block.split("\n")
+            children = []
+            for line in lines:
+                children.append(LeafNode("li", text_to_children(line[3:])))
+            return ParentNode("ol", children)
+        case BlockType.ORDERED_LIST:
+            lines = block.split("\n")
+            children = []
+            for line in lines:
+                children.append(LeafNode("li", text_to_children(line[2:])))
+            return ParentNode("ul", children)
+        case BlockType.CODE:
+            return ParentNode("pre", [LeafNode("code", text_to_children(block[4:-3])),])
+        case BlockType.HEADING:
+            heading, text = block.split(" ", 1)
+            return ParentNode(f"h{len(heading)}", text_to_children(text))
+        case BlockType.PARAGRAPH:
+            return ParentNode("p", text_to_children(block))
+        case _:
+            raise ValueError("Block type is not correct:", block_type)
+
+def text_to_children(text):
+    return text.strip(" ")
+
+def text_node_to_html_node(text_node):
+    pass
