@@ -36,7 +36,11 @@ def markdown_to_blocks(markdown):
     return blocks
 
 def block_to_block_type(block):
-    leading_chars, rest_of_the_text = block.split(" ", 1)
+    if len(block.split(" ", 1)) == 2:
+        leading_chars, rest_of_the_text = block.split(" ", 1)
+    else:
+        leading_chars = block.split(" ", 1)[0]
+        rest_of_the_text = ""
     lines = block.split("/n")
     if leading_chars in "######" and rest_of_the_text != "":
         return BlockType.HEADING
