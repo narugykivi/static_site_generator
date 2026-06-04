@@ -4,6 +4,8 @@ from shutil import copy, rmtree
 def copy_all(source, destination):
     working_dir = os.path.abspath(source)
     target_dir = os.path.abspath(destination)
+    if not os.path.exists(target_dir):
+        os.mkdir(target_dir)
     delete_all(target_dir)
     files, dirs = get_files(working_dir)
     #print(files)

@@ -1,6 +1,5 @@
 #custom
 src/test_from_third_party.py
-public/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
