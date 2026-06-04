@@ -1,7 +1,7 @@
 import os
 from shutil import copy, rmtree
 
-def copy_all(source="static", destination="public"):
+def copy_all(source, destination):
     working_dir = os.path.abspath(source)
     target_dir = os.path.abspath(destination)
     delete_all(target_dir)

@@ -1,9 +1,9 @@
 from textnode import TextNode, TextType
 from clean_copy import copy_all
-from generate_page import generate_page
+from generate_page import generate_pages_recursive
 
 def main():
-    copy_all()
-    generate_page("content/index.md", "template.html", "public/index.html")
+    copy_all("static", "public")
+    generate_pages_recursive("content", "template.html", "public")
     
 main()
